@@ -18,6 +18,7 @@
     "start:rsc": "nodemon -- --experimental-loader ./node-jsx-loader.js ./server/rsc.js",
     "start:ssr": "nodemon -- --experimental-loader ./node-jsx-loader.js ./server/ssr.js",
     "build": "babel server -d lib --watch",
+    "start:deno": "deno run --allow-all --unstable ./lib/main.js",
     "start:babel:ssr": "node ./lib/ssr.js",
     "start:babel:rsc": "node ./lib/rsc.js",
     "start:babel": "concurrently \"npm run start:babel:ssr\" \"npm run start:babel:rsc\"",

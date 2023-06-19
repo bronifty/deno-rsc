@@ -1,4 +1,5 @@
 const kv = await Deno.openKv("./data/sql.db");
+
 export async function addComment({ slug, comment }) {
   const data = {
     slug,
@@ -9,11 +10,10 @@ export async function addComment({ slug, comment }) {
   };
   await kv.set(["comments", slug, data.id], data);
 }
+
 export async function getCommentsBySlug({ slug }) {
   const comments = [];
-  for await (const res of kv.list({
-    prefix: ["comments", slug],
-  })) {
+  for await (const res of kv.list({ prefix: ["comments", slug] })) {
     comments.push(res.value);
   }
   console.log("in getCommentsBySlug; slug: ", slug, "comments: ", comments);
