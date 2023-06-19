@@ -6,6 +6,7 @@ import readDirectory from "../utils/readdir.js";
 import { serve } from "https://deno.land/std@0.140.0/http/server.ts";
 import { addComment, getCommentsBySlug } from "./db2.js";
 import parseMultipartFormData from "../utils/form.js";
+import Router from "./components.js";
 
 async function handler(req) {
   const url = new URL(req.url);
@@ -46,8 +47,7 @@ async function handler(req) {
     }
   } catch (err) {
     console.error(err);
-    res.writeHead(err.statusCode ?? 500);
-    res.end();
+    return new Response(err.stack, { status: 500 });
   }
 }
 serve(handler, { port: 8080 });
@@ -144,161 +144,155 @@ function stringifyJSX(key, value) {
   }
 }
 
-function throwNotFound(cause) {
-  const notFound = new Error("Not found.", { cause });
-  notFound.statusCode = 404;
-  throw notFound;
-}
+// export default function Router({ url }) {
+//   let page;
+//   if (url.pathname === "/") {
+//     console.log("in rsc server Router; url.pathname is /");
+//     page = <BlogIndexPage />;
+//   } else {
+//     console.log("in rsc server Router; url.pathname is not /");
 
-export default function Router({ url }) {
-  let page;
-  if (url.pathname === "/") {
-    console.log("in rsc server Router; url.pathname is /");
-    page = <BlogIndexPage />;
-  } else {
-    console.log("in rsc server Router; url.pathname is not /");
+//     const postSlug = sanitizeFilename(url.pathname.slice(1));
+//     page = <BlogPostPage postSlug={postSlug} />;
+//   }
+//   return (
+//     <BlogLayout>
+//       {<React.Fragment key={url.pathname}>{page}</React.Fragment>}
+//     </BlogLayout>
+//   );
+// }
 
-    const postSlug = sanitizeFilename(url.pathname.slice(1));
-    page = <BlogPostPage postSlug={postSlug} />;
-  }
-  return (
-    <BlogLayout>
-      {<React.Fragment key={url.pathname}>{page}</React.Fragment>}
-    </BlogLayout>
-  );
-}
+// async function BlogIndexPage() {
+//   async function getPostSlugs() {
+//     const directoryPath = "./posts";
+//     const postFiles = await readDirectory(directoryPath);
+//     const postSlugs = postFiles.map((file) =>
+//       file.slice(0, file.lastIndexOf("."))
+//     );
+//     return postSlugs;
+//   }
+//   const postSlugs = await getPostSlugs();
+//   return (
+//     <section>
+//       <h1>Welcome to my blog</h1>
+//       <div>
+//         {postSlugs.map((slug) => (
+//           <Post key={slug} slug={slug} />
+//         ))}
+//       </div>
+//     </section>
+//   );
+// }
 
-async function BlogIndexPage() {
-  async function getPostSlugs() {
-    const directoryPath = "./posts";
-    const postFiles = await readDirectory(directoryPath);
-    const postSlugs = postFiles.map((file) =>
-      file.slice(0, file.lastIndexOf("."))
-    );
-    return postSlugs;
-  }
-  const postSlugs = await getPostSlugs();
-  return (
-    <section>
-      <h1>Welcome to my blog</h1>
-      <div>
-        {postSlugs.map((slug) => (
-          <Post key={slug} slug={slug} />
-        ))}
-      </div>
-    </section>
-  );
-}
+// function BlogPostPage({ postSlug }) {
+//   return (
+//     <>
+//       <Post slug={postSlug} />
+//       <CommentForm slug={postSlug} />
+//       <Comments slug={postSlug} />
+//     </>
+//   );
+// }
 
-function BlogPostPage({ postSlug }) {
-  return (
-    <>
-      <Post slug={postSlug} />
-      <CommentForm slug={postSlug} />
-      <Comments slug={postSlug} />
-    </>
-  );
-}
+// async function Post({ slug }) {
+//   let content;
+//   try {
+//     content = await readFile("./posts/" + slug + ".txt", "utf8");
+//   } catch (err) {
+//     throwNotFound(err);
+//   }
+//   return (
+//     <section>
+//       <h2>
+//         <a href={"/" + slug}>{slug}</a>
+//       </h2>
+//       <article>
+//         <ReactMarkdown
+//           children={content}
+//           components={{
+//             img: ({ node, ...props }) => (
+//               <img style={{ maxWidth: "100%" }} {...props} />
+//             ),
+//           }}
+//         />
+//       </article>
+//     </section>
+//   );
+// }
 
-async function Post({ slug }) {
-  let content;
-  try {
-    content = await readFile("./posts/" + slug + ".txt", "utf8");
-  } catch (err) {
-    throwNotFound(err);
-  }
-  return (
-    <section>
-      <h2>
-        <a href={"/" + slug}>{slug}</a>
-      </h2>
-      <article>
-        <ReactMarkdown
-          children={content}
-          components={{
-            img: ({ node, ...props }) => (
-              <img style={{ maxWidth: "100%" }} {...props} />
-            ),
-          }}
-        />
-      </article>
-    </section>
-  );
-}
+// async function CommentForm({ slug }) {
+//   return (
+//     <form id={`${slug}-form`} action={`/${slug}`} method="post">
+//       <input hidden readOnly name="slug" value={slug} />
+//       <textarea name="comment" required></textarea>
+//       <button type="submit">Post Comment</button>
+//     </form>
+//   );
+// }
 
-async function CommentForm({ slug }) {
-  return (
-    <form id={`${slug}-form`} action={`/${slug}`} method="post">
-      <input hidden readOnly name="slug" value={slug} />
-      <textarea name="comment" required></textarea>
-      <button type="submit">Post Comment</button>
-    </form>
-  );
-}
+// async function Comments({ slug }) {
+//   let comments;
+//   try {
+//     // const commentsFile = await readFile("./comments/comments.json", "utf8");
+//     // const allComments = JSON.parse(commentsFile);
+//     // comments = allComments.filter((comment) => comment.slug === slug);
+//     // const comments = await kv.get(["comments"]);
+//     comments = await getCommentsBySlug({ slug });
+//     console.log("in RSC Comments; comments: ", comments, "slug: ", slug);
+//   } catch (err) {
+//     console.log("No comments found for post:", slug);
+//     throwNotFound(err);
+//   }
+//   return (
+//     <section>
+//       <h2>Comments</h2>
+//       <ul>
+//         {comments?.map((comment) => (
+//           <li key={comment.slug}>
+//             <p>{comment.comment}</p>
+//             <p>
+//               <i>by {comment.author}</i>
+//             </p>
+//             <p>at {Date(comment.timestamp)}</p>
+//           </li>
+//         ))}
+//       </ul>
+//     </section>
+//   );
+// }
 
-async function Comments({ slug }) {
-  let comments;
-  try {
-    // const commentsFile = await readFile("./comments/comments.json", "utf8");
-    // const allComments = JSON.parse(commentsFile);
-    // comments = allComments.filter((comment) => comment.slug === slug);
-    // const comments = await kv.get(["comments"]);
-    comments = await getCommentsBySlug({ slug });
-    console.log("in RSC Comments; comments: ", comments, "slug: ", slug);
-  } catch (err) {
-    console.log("No comments found for post:", slug);
-    throwNotFound(err);
-  }
-  return (
-    <section>
-      <h2>Comments</h2>
-      <ul>
-        {comments?.map((comment) => (
-          <li key={comment.slug}>
-            <p>{comment.comment}</p>
-            <p>
-              <i>by {comment.author}</i>
-            </p>
-            <p>at {Date(comment.timestamp)}</p>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
+// function BlogLayout({ children }) {
+//   const author = "Jae Doe";
+//   return (
+//     <html>
+//       <head>
+//         <title>My blog</title>
+//       </head>
+//       <body>
+//         <nav>
+//           <a href="/">Home</a>
+//           <hr />
+//           <input />
+//           <hr />
+//         </nav>
+//         <main>{children}</main>
+//         <Footer author={author} />
+//       </body>
+//     </html>
+//   );
+// }
 
-function BlogLayout({ children }) {
-  const author = "Jae Doe";
-  return (
-    <html>
-      <head>
-        <title>My blog</title>
-      </head>
-      <body>
-        <nav>
-          <a href="/">Home</a>
-          <hr />
-          <input />
-          <hr />
-        </nav>
-        <main>{children}</main>
-        <Footer author={author} />
-      </body>
-    </html>
-  );
-}
-
-function Footer({ author }) {
-  return (
-    <>
-      <footer>
-        <hr />
-        <p>
-          <i>
-            (c) {author} {new Date().getFullYear()}
-          </i>
-        </p>
-      </footer>
-    </>
-  );
-}
+// function Footer({ author }) {
+//   return (
+//     <>
+//       <footer>
+//         <hr />
+//         <p>
+//           <i>
+//             (c) {author} {new Date().getFullYear()}
+//           </i>
+//         </p>
+//       </footer>
+//     </>
+//   );
+// }

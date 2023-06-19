@@ -34,3 +34,9 @@ export default function parseMultipartFormData(body, boundary) {
 // let parsedBody = parseMultipartFormData(body, boundary);
 
 // console.log(parsedBody);
+
+export function throwNotFound(cause) {
+  const notFound = new Error("Not found.", { cause });
+  notFound.statusCode = 404;
+  throw notFound;
+}
