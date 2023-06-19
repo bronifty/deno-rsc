@@ -1,7 +1,7 @@
 import React from "react";
 import { readFile, readdir } from "node:fs/promises";
-import sanitizeFilename from "sanitize-filename";
-import ReactMarkdown from "react-markdown";
+import sanitizeFilename from "https://esm.sh/sanitize-filename@1.6.3";
+import ReactMarkdown from "https://esm.sh/react-markdown@8.0.7";
 import readDirectory from "../utils/readdir.js";
 import { serve } from "https://deno.land/std@0.140.0/http/server.ts";
 import { addComment, getCommentsBySlug } from "./db2.js";
